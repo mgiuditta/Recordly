@@ -3,6 +3,7 @@ import {
 	CaretUpIcon,
 	House,
 	DotsThreeVerticalIcon,
+	MagnifyingGlassPlus,
 	MicrophoneIcon,
 	MicrophoneSlashIcon,
 	MinusIcon,
@@ -13,7 +14,7 @@ import {
 	XIcon,
 } from "@/components/ui/icons";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { useScopedT } from "../../contexts/I18nContext";
 import { useMicrophoneDevices } from "../../hooks/useMicrophoneDevices";
@@ -51,6 +52,12 @@ export function LaunchWindow() {
 function LaunchWindowContent() {
 	const t = useScopedT("launch");
 	const { openId, requestOpen } = useLaunchPopoverCoordinator();
+	const [liveActive, setLiveActive] = useState(false);
+
+	useEffect(() => {
+		void window.electronAPI.getLiveMode().then((state) => setLiveActive(state.active));
+		return window.electronAPI.onLiveModeChanged((state) => setLiveActive(state.active));
+	}, []);
 
 	const {
 		recording,
@@ -373,6 +380,19 @@ function LaunchWindowContent() {
 				title={t("recording.record")}
 			>
 				<div className={styles.recDot} />
+			</Button>
+
+			<Button
+				type="button"
+				variant="ghost"
+				size="icon"
+				iconSize="lg"
+				className={`${styles.electronNoDrag} ${liveActive ? "text-accent" : ""}`}
+				onClick={() => void window.electronAPI.toggleLiveMode()}
+				disabled={countdownActive}
+				title={t(liveActive ? "recording.stopLive" : "recording.startLive")}
+			>
+				<MagnifyingGlassPlus weight={liveActive ? "fill" : "regular"} className="size-5" />
 			</Button>
 
 			<Separator orientation="vertical" className="mx-[5px] h-6 self-center" />

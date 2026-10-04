@@ -61,6 +61,7 @@ import {
 	setHudOverlayRecordingActive,
 	showUpdateToastWindow,
 } from "./windows";
+import { isLiveWebContents, registerLiveHandlers, stopLive } from "./live";
 
 const electronMainDir = path.dirname(fileURLToPath(import.meta.url));
 const IS_SMOKE_EXPORT = process.env.RECORDLY_SMOKE_EXPORT === "1";
@@ -880,6 +881,7 @@ app.on("before-quit", () => {
 		console.warn("Could not clear recording undo cache", error),
 	);
 	killWindowsCaptureProcess();
+	stopLive();
 	showCursor();
 	cleanupNativeVideoExportSessions();
 	void cleanupAllExportStreams();
@@ -926,7 +928,8 @@ app.whenReady().then(async () => {
 			return shouldGrantMediaPermission(
 				{
 					permission,
-					isTrustedCaptureWindow: isHudWebContents(webContents),
+					isTrustedCaptureWindow:
+						isHudWebContents(webContents) || isLiveWebContents(webContents),
 					isMainFrame: details.isMainFrame,
 					currentDocumentUrl: webContents?.getURL() ?? "",
 					// Electron 39 may supply the last committed document URL, including its
@@ -948,7 +951,8 @@ app.whenReady().then(async () => {
 				shouldGrantMediaPermission(
 					{
 						permission,
-						isTrustedCaptureWindow: isHudWebContents(webContents),
+						isTrustedCaptureWindow:
+							isHudWebContents(webContents) || isLiveWebContents(webContents),
 						isMainFrame: details.isMainFrame,
 						currentDocumentUrl: webContents.getURL(),
 						requestingUrl: details.requestingUrl,
@@ -1023,6 +1027,7 @@ app.whenReady().then(async () => {
 		}),
 	]);
 
+	registerLiveHandlers();
 	registerIpcHandlers(
 		createEditorWindowWrapper,
 		createSourceSelectorWindowWrapper,

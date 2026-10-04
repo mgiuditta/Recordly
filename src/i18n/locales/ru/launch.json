@@ -54,7 +54,9 @@
 			"upToDateTitle": "У вас актуальная версия Recordly {{version}}.",
 			"availableTitle": "Доступна новая версия Recordly {{version}}.",
 			"availableGenericTitle": "Доступно обновление."
-		}
+		},
+		"startLive": "Start live zoom (Alt+Z to zoom)",
+		"stopLive": "Stop live zoom"
 	},
 	"sourceSelector": {
 		"loadingSources": "Загрузка источников...",

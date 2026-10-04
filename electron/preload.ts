@@ -664,6 +664,26 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.on("cursor-state-changed", listener);
 		return () => ipcRenderer.removeListener("cursor-state-changed", listener);
 	},
+	toggleLiveMode: () => ipcRenderer.invoke("toggle-live-mode"),
+	getLiveMode: () => ipcRenderer.invoke("get-live-mode"),
+	getLiveSession: () => ipcRenderer.invoke("get-live-session"),
+	onLiveModeChanged: (callback: (state: { active: boolean }) => void) => {
+		const listener = (_event: Electron.IpcRendererEvent, payload: { active: boolean }) =>
+			callback(payload);
+		ipcRenderer.on("live-mode-changed", listener);
+		return () => ipcRenderer.removeListener("live-mode-changed", listener);
+	},
+	onLiveCursorSample: (callback: (sample: CursorTelemetryPoint) => void) => {
+		const listener = (_event: Electron.IpcRendererEvent, sample: CursorTelemetryPoint) =>
+			callback(sample);
+		ipcRenderer.on("live-cursor-sample", listener);
+		return () => ipcRenderer.removeListener("live-cursor-sample", listener);
+	},
+	onLiveToggleZoom: (callback: () => void) => {
+		const listener = () => callback();
+		ipcRenderer.on("live-toggle-zoom", listener);
+		return () => ipcRenderer.removeListener("live-toggle-zoom", listener);
+	},
 	openExternalUrl: (url: string) => {
 		return ipcRenderer.invoke("open-external-url", url);
 	},

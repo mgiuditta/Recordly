@@ -22,6 +22,14 @@ export function emitCursorStateChanged(cursorType: CursorVisualType) {
 	});
 }
 
+type LiveInteractionListener = (event: "mousedown" | "mouseup", button: 1 | 2 | 3) => void;
+let liveInteractionListener: LiveInteractionListener | null = null;
+
+/** Live mode taps clicks here because recordCursorMouseDown only records while a recording runs. */
+export function setLiveInteractionListener(listener: LiveInteractionListener | null) {
+	liveInteractionListener = listener;
+}
+
 export function handleCursorMonitorStdout(chunk: Buffer) {
 	setNativeCursorMonitorOutputBuffer(nativeCursorMonitorOutputBuffer + chunk.toString());
 	const lines = nativeCursorMonitorOutputBuffer.split(/\r?\n/);
@@ -30,11 +38,14 @@ export function handleCursorMonitorStdout(chunk: Buffer) {
 	for (const line of lines) {
 		const interactionMatch = line.match(/^INTERACTION:(mousedown|mouseup)(?::([123]))?$/);
 		if (interactionMatch) {
+			const button = Number(interactionMatch[2]);
+			const normalizedButton = button === 2 || button === 3 ? button : 1;
 			if (interactionMatch[1] === "mouseup") {
 				recordCursorMouseUp();
+				liveInteractionListener?.("mouseup", normalizedButton);
 			} else {
-				const button = Number(interactionMatch[2]);
-				recordCursorMouseDown(button === 2 || button === 3 ? button : 1);
+				recordCursorMouseDown(normalizedButton);
+				liveInteractionListener?.("mousedown", normalizedButton);
 			}
 			continue;
 		}
@@ -69,6 +80,8 @@ export function stopNativeCursorMonitor() {
 		return;
 	}
 
+	// The helper may already be gone; EPIPE arrives as an async stream error.
+	nativeCursorMonitorProcess.stdin.on("error", () => {});
 	try {
 		nativeCursorMonitorProcess.stdin.write("stop\n");
 	} catch {

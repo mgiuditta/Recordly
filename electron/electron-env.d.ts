@@ -218,6 +218,22 @@ interface RendererExportHardwareInfo {
 
 interface Window {
 	electronAPI: {
+		toggleLiveMode: () => Promise<{ success: boolean; active: boolean; error?: string }>;
+		getLiveMode: () => Promise<{ success: boolean; active: boolean }>;
+		getLiveSession: () => Promise<
+			| { success: false }
+			| {
+					success: true;
+					startedAt: number;
+					screenSourceId: string;
+					outputSourceId: string;
+					captureWidth: number;
+					captureHeight: number;
+			  }
+		>;
+		onLiveModeChanged: (callback: (state: { active: boolean }) => void) => () => void;
+		onLiveCursorSample: (callback: (sample: CursorTelemetryPoint) => void) => () => void;
+		onLiveToggleZoom: (callback: () => void) => () => void;
 		hudOverlaySetIgnoreMouse: (ignore: boolean) => void;
 		hudOverlaySetSourceSelectionActive: (active: boolean) => void;
 		hudOverlayDrag: (phase: "start" | "move" | "end", screenX: number, screenY: number) => void;

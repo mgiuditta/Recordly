@@ -20,6 +20,16 @@ const UpdateToastWindow = lazy(() =>
 	})),
 );
 const EditorWindow = lazy(() => import("./components/video-editor/EditorWindow"));
+const LiveOutputWindow = lazy(() =>
+	import("./components/live/LiveOutputWindow").then((module) => ({
+		default: module.LiveOutputWindow,
+	})),
+);
+const LiveMonitorWindow = lazy(() =>
+	import("./components/live/LiveMonitorWindow").then((module) => ({
+		default: module.LiveMonitorWindow,
+	})),
+);
 
 export default function App() {
 	const [windowType] = useState(
@@ -55,10 +65,13 @@ export default function App() {
 	}, [windowType]);
 
 	useEffect(() => {
+		// The output title is what Discord lists in its window picker.
 		document.title =
 			windowType === "editor"
 				? t("app.editorTitle", "Recordly Editor")
-				: t("app.name", "Recordly");
+				: windowType === "live-output"
+					? "Recordly Live Output"
+					: t("app.name", "Recordly");
 	}, [windowType, t]);
 
 	let content;
@@ -77,6 +90,12 @@ export default function App() {
 			break;
 		case "editor":
 			content = <EditorWindow />;
+			break;
+		case "live-output":
+			content = <LiveOutputWindow />;
+			break;
+		case "live-monitor":
+			content = <LiveMonitorWindow />;
 			break;
 		default:
 			content = (

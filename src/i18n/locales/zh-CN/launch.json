@@ -54,7 +54,9 @@
 			"upToDateTitle": "Recordly {{version}} 已是最新版本。",
 			"availableTitle": "Recordly {{version}} 可更新。",
 			"availableGenericTitle": "有可用更新。"
-		}
+		},
+		"startLive": "Start live zoom (Alt+Z to zoom)",
+		"stopLive": "Stop live zoom"
 	},
 	"sourceSelector": {
 		"loadingSources": "正在加载源...",

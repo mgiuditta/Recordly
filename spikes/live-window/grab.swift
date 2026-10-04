@@ -1,5 +1,5 @@
 // Simulates Discord: grabs one window by CGWindowID through ScreenCaptureKit.
-// usage: swift grab.swift <windowID> <out.png>
+// usage: swift grab.swift <windowID|title> <out.png>
 import AppKit
 import CoreGraphics
 import Foundation
@@ -8,12 +8,12 @@ import ScreenCaptureKit
 import UniformTypeIdentifiers
 
 _ = NSApplication.shared // CGS needs a connection before SCK calls
-let windowID = CGWindowID(CommandLine.arguments[1])!
+let target = CommandLine.arguments[1]
 let outURL = URL(fileURLWithPath: CommandLine.arguments[2])
 
 let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
-guard let window = content.windows.first(where: { $0.windowID == windowID }) else {
-	print("window \(windowID) not shareable; onScreen windows:", content.windows.filter(\.isOnScreen).count)
+guard let window = content.windows.first(where: { String($0.windowID) == target || $0.title == target }) else {
+	print("window \(target) not shareable; onScreen windows:", content.windows.filter(\.isOnScreen).count)
 	exit(1)
 }
 print("window", window.title ?? "-", "frame", window.frame, "onScreen", window.isOnScreen)

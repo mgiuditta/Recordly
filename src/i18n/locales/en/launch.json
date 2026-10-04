@@ -54,7 +54,9 @@
 			"upToDateTitle": "Recordly {{version}} is up to date.",
 			"availableTitle": "Recordly {{version}} is available.",
 			"availableGenericTitle": "An update is available."
-		}
+		},
+		"startLive": "Start live zoom (Alt+Z to zoom)",
+		"stopLive": "Stop live zoom"
 	},
 	"sourceSelector": {
 		"loadingSources": "Loading sources...",

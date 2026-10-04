@@ -1,4 +1,5 @@
-const CAPTURE_WINDOW_TYPE = "hud-overlay";
+// Live windows capture too; main still checks the webContents is the live session's own.
+const CAPTURE_WINDOW_TYPES = new Set(["hud-overlay", "live-output", "live-monitor"]);
 const TRUSTED_RENDERER_PROTOCOLS = new Set(["http:", "https:", "file:"]);
 const FILE_SECURITY_ORIGINS = new Set(["null", "file://", "file:///"]);
 
@@ -32,7 +33,7 @@ function hasExactCaptureWindowQuery(url: URL): boolean {
 	return (
 		entries.length === 1 &&
 		entries[0]?.[0] === "windowType" &&
-		entries[0][1] === CAPTURE_WINDOW_TYPE
+		CAPTURE_WINDOW_TYPES.has(entries[0][1])
 	);
 }
 
