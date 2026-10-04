@@ -1,0 +1,13 @@
+<!doctype html>
+<meta charset="utf-8" />
+<style>
+	html, body { margin: 0; background: #000; overflow: hidden; -webkit-app-region: drag; }
+	video { width: 100vw; height: 100vh; object-fit: contain; display: block; }
+</style>
+<video autoplay muted></video>
+<script>
+	navigator.mediaDevices
+		.getDisplayMedia({ video: { frameRate: 30 } })
+		.then((stream) => (document.querySelector("video").srcObject = stream))
+		.catch((err) => window.spike.log(`monitor capture failed: ${err}`));
+</script>

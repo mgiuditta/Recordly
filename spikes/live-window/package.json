@@ -1,0 +1,1 @@
+{"name":"live-window-spike","private":true,"main":"main.cjs","scripts":{"start":"electron ."},"devDependencies":{"electron":"^43.7.7"}}

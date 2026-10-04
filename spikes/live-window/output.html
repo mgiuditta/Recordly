@@ -1,0 +1,75 @@
+<!doctype html>
+<meta charset="utf-8" />
+<style>
+	html, body { margin: 0; background: #000; overflow: hidden; }
+	canvas { width: 100vw; height: 100vh; display: block; }
+</style>
+<canvas></canvas>
+<script>
+	// ponytail: canvas 2D + hand-rolled spring; the real build swaps in Recordly's PIXI renderer and stepSpringValue
+	const ZOOM = 2;
+	const SAFE = 0.25; // same inset ratio as Recordly's cursorFollowCamera
+	const canvas = document.querySelector("canvas");
+	const ctx = canvas.getContext("2d");
+	const video = document.createElement("video");
+	video.muted = true;
+
+	let cursor = { x: 0.5, y: 0.5 };
+	let zoomed = false;
+	let target = { scale: 1, x: 0.5, y: 0.5 };
+	const cam = { scale: 1, x: 0.5, y: 0.5, vs: 0, vx: 0, vy: 0 };
+	let last = performance.now();
+	let frames = 0;
+
+	window.spike.onCursor((p) => (cursor = p));
+	window.spike.onToggleZoom(() => {
+		zoomed = !zoomed;
+		if (zoomed) target = { scale: ZOOM, x: cursor.x, y: cursor.y };
+		else target = { scale: 1, x: 0.5, y: 0.5 };
+	});
+
+	function follow() {
+		if (!zoomed) return;
+		const half = 1 / (2 * ZOOM);
+		const inset = 2 * half * SAFE;
+		if (cursor.x < target.x - half + inset || cursor.x > target.x + half - inset) target.x = cursor.x;
+		if (cursor.y < target.y - half + inset || cursor.y > target.y + half - inset) target.y = cursor.y;
+		target.x = Math.min(1 - half, Math.max(half, target.x));
+		target.y = Math.min(1 - half, Math.max(half, target.y));
+	}
+
+	function spring(key, vKey, goal, dt) {
+		const k = 170, d = 26; // stiffness, damping (≈ critically damped)
+		const a = k * (goal - cam[key]) - d * cam[vKey];
+		cam[vKey] += a * dt;
+		cam[key] += cam[vKey] * dt;
+	}
+
+	function frame(now) {
+		const dt = Math.min(0.05, (now - last) / 1000);
+		last = now;
+		follow();
+		spring("scale", "vs", target.scale, dt);
+		spring("x", "vx", target.x, dt);
+		spring("y", "vy", target.y, dt);
+
+		const w = (canvas.width = video.videoWidth || innerWidth);
+		const h = (canvas.height = video.videoHeight || innerHeight);
+		ctx.setTransform(cam.scale, 0, 0, cam.scale, w / 2 - cam.x * w * cam.scale, h / 2 - cam.y * h * cam.scale);
+		ctx.drawImage(video, 0, 0, w, h);
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.fillStyle = "#0f0";
+		ctx.font = "28px monospace";
+		ctx.fillText(`frame ${++frames}`, 20, h - 20); // freeze detector for the capture check
+		requestAnimationFrame(frame);
+	}
+
+	navigator.mediaDevices
+		.getDisplayMedia({ video: { frameRate: 60 } })
+		.then((stream) => {
+			video.srcObject = stream;
+			return video.play();
+		})
+		.then(() => requestAnimationFrame(frame))
+		.catch((err) => window.spike.log(`output capture failed: ${err}`));
+</script>
